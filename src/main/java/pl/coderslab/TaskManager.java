@@ -17,7 +17,9 @@ public class TaskManager {
     public static void main(String[] args) {
         String[][] tasks = uploadTasks("tasks.csv");
 
-        
+        removeTask(tasks);
+
+
 
     }
 
@@ -83,16 +85,27 @@ public class TaskManager {
         return tasks;
         }
 
-        public static String[][] removeTask (String[][]tasks){
+    public static String[][] removeTask (String[][] tasks){
 
-            System.out.println("Please select a number to remove.");
-            Scanner scanner = new Scanner(System.in);
-            int taskNumber = scanner.nextInt();
-            scanner.close();
-            tasks = ArrayUtils.remove(tasks, taskNumber);
+        System.out.println("Please select a number to remove.");
+        Scanner scanner = new Scanner(System.in);
+        String taskNumber = scanner.nextLine();
+
+
+        try {
+            tasks = ArrayUtils.remove(tasks, Integer.parseInt(taskNumber));
+            // add confirmation?
             System.out.println("Task was successfully removed.");
-            return tasks;
+        } catch (IndexOutOfBoundsException e2) {
+            System.out.println("Select a number between 0 and " + (tasks.length - 1) + ".");
+        } catch (NumberFormatException e1) {
+            System.out.println("Task number must be integer.");
         }
+
+        return tasks;
+
+    }
+
 
     public static boolean isValidDate(String inDate) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
