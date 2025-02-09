@@ -5,21 +5,44 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Scanner;
-import java.time.LocalDate;
 
 public class TaskManager {
 
     public static void main(String[] args) {
-        String[][] tasks = uploadTasks("tasks.csv");
 
-        removeTask(tasks);
+        boolean runTaskManager = true;
 
+        String taskFile = "tasks2.csv";
+        String[][] tasks = uploadTasks(taskFile);
+        System.out.println(ConsoleColors.BLUE + "Welcome to Task Manager");
 
+        Scanner scanner = new Scanner(System.in);
+
+        while (runTaskManager) {
+            System.out.println(ConsoleColors.BLUE + "Please select an option:");
+            System.out.println(ConsoleColors.RESET + "add\nremove\nlist\nexit");
+            String option = scanner.nextLine();
+
+            if (option.equals("add")) {
+                tasks = addTask(tasks);
+                saveTasks(tasks, taskFile);
+            } else if (option.equals("remove")) {
+                tasks = removeTask(tasks);
+                saveTasks(tasks, taskFile);
+            } else if (option.equals("list")) {
+                listTasks(tasks);
+            } else if (option.equals("exit")) {
+                System.out.println(ConsoleColors.RED + "Bye");
+                runTaskManager = false;
+            } else {
+                System.out.println(ConsoleColors.RED + "Invalid option");
+            }
+        }
 
     }
 
@@ -76,11 +99,13 @@ public class TaskManager {
             isImportant = scanner.nextLine();
         }
 
-        scanner.close();
+        //scanner.close();
 
         tasks = Arrays.copyOf(tasks, tasks.length + 1);
         String[] newTask = {description, dueDate, isImportant};
         tasks[tasks.length - 1] = newTask;
+
+        System.out.println("Task added successfully.");
 
         return tasks;
         }
@@ -88,19 +113,36 @@ public class TaskManager {
     public static String[][] removeTask (String[][] tasks){
 
         System.out.println("Please select a number to remove.");
+
         Scanner scanner = new Scanner(System.in);
         String taskNumber = scanner.nextLine();
 
-
         try {
-            tasks = ArrayUtils.remove(tasks, Integer.parseInt(taskNumber));
-            // add confirmation?
-            System.out.println("Task was successfully removed.");
-        } catch (IndexOutOfBoundsException e2) {
-            System.out.println("Select a number between 0 and " + (tasks.length - 1) + ".");
-        } catch (NumberFormatException e1) {
-            System.out.println("Task number must be integer.");
+            int taskNumberInt = Integer.parseInt(taskNumber);
+            String[] taskToRemove = tasks[taskNumberInt];
+
+            System.out.println("Are you sure you want to remove task " + taskNumber + "? (yes/no)");
+            String confirmation = scanner.nextLine();
+            while (!((confirmation.equals("yes")) || (confirmation.equals("no")))) {
+                System.out.println("Enter yes or no.");
+                confirmation = scanner.nextLine();
+            }
+
+            if (confirmation.equals("yes")) {
+                tasks = ArrayUtils.remove(tasks, taskNumberInt);
+                System.out.println("Task " + taskNumber + "was successfully removed.");
+            } else {
+                System.out.println("Task " + taskNumber + " was NOT removed.");
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("Please enter an integer number.");
         }
+        catch (IndexOutOfBoundsException e1) {
+            System.out.println("Select a number between 0 and " + (tasks.length - 1) + ".");
+        }
+
+        //scanner.close();
 
         return tasks;
 
@@ -116,6 +158,18 @@ public class TaskManager {
             return false;
         }
         return true;
+    }
+
+
+    public static void saveTasks(String[][] tasks, String fileName) {
+        try (PrintWriter printWriter = new PrintWriter(fileName)) {
+
+            for (int i = 0; i < tasks.length; i++) {
+                printWriter.println(String.join(",", tasks[i]));
+            }
+        } catch (FileNotFoundException ex) {
+            System.out.println("Error - file not saved.");
+        }
     }
 
 
